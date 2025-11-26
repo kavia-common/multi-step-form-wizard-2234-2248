@@ -1,0 +1,4 @@
+{
+    "command": "npm run test",
+    "working_directory": "/home/kavia/workspace/code-generation/multi-step-form-wizard-2234-2248/frontend_app"
+}
