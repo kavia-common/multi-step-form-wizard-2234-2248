@@ -95,10 +95,10 @@ function App() {
   const handleSubmit = (result) => {
     // eslint-disable-next-line no-console
     console.log('Submit result:', result);
-    if (result.valid) {
-      alert('Submitted! Check console for data.');
-    } else {
-      alert('Fix errors before submitting.');
+    // WizardContainer already shows success/error panels.
+    // Keep minimal alerts to avoid duplicate/confusing UX.
+    if (!result.valid) {
+      alert('Please fix the highlighted errors and try again.');
     }
   };
 
