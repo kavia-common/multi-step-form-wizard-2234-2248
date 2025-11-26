@@ -1,6 +1,7 @@
 import React from "react";
 import ProgressBar from "./ProgressBar";
 import { useWizard } from "../../hooks/useWizard";
+import Button from "../common/Button";
 
 /**
  * PUBLIC_INTERFACE
@@ -97,33 +98,24 @@ export default function WizardContainer({
       <footer className="sticky bottom-0 mt-12 w-full border-t border-gray-200 bg-surface/80 backdrop-blur">
         <div className="mx-auto max-w-3xl px-4 py-4">
           <div className="flex items-center justify-between">
-            <button
+            <Button
+              variant="ghost"
               type="button"
-              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={back}
               disabled={!canGoBack}
               aria-disabled={!canGoBack}
             >
               Back
-            </button>
+            </Button>
             <div className="flex items-center gap-2">
               {canGoNext ? (
-                <button
-                  type="button"
-                  className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white shadow-soft transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  onClick={handleNext}
-                >
+                <Button type="button" variant="primary" onClick={handleNext}>
                   Next
-                </button>
+                </Button>
               ) : (
-                <button
-                  type="button"
-                  className="inline-flex items-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-white shadow-soft transition hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
-                  onClick={handleSubmit}
-                  title="Submit"
-                >
+                <Button type="button" variant="secondary" onClick={handleSubmit} title="Submit">
                   Submit
-                </button>
+                </Button>
               )}
             </div>
           </div>

@@ -1,5 +1,7 @@
 import React from 'react';
 import WizardContainer from './components/Wizard/WizardContainer';
+import FormField from './components/common/FormField';
+import Button from './components/common/Button';
 
 /**
  * PUBLIC_INTERFACE
@@ -7,42 +9,45 @@ import WizardContainer from './components/Wizard/WizardContainer';
  * Integrates the WizardContainer with placeholder steps and simple validators.
  */
 function App() {
-  // Placeholder step components
-  const StepProfile = ({ data, updateData }) => (
+  // Placeholder step components using common FormField and Button
+  const StepProfile = ({ data, updateData, errors = {} }) => (
     <div className="mt-2">
       <p className="text-sm text-gray-600">Enter your basic profile information.</p>
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">First name</label>
-          <input
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-primary/20 focus:border-primary focus:ring-2"
-            placeholder="Jane"
-            aria-label="First name"
-            value={data.firstName || ''}
-            onChange={(e) => updateData({ firstName: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Last name</label>
-          <input
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-primary/20 focus:border-primary focus:ring-2"
-            placeholder="Doe"
-            aria-label="Last name"
-            value={data.lastName || ''}
-            onChange={(e) => updateData({ lastName: e.target.value })}
-          />
-        </div>
+        <FormField
+          id="firstName"
+          label="First name"
+          required
+          placeholder="Jane"
+          value={data.firstName || ''}
+          onChange={(e) => updateData({ firstName: e.target.value })}
+          error={errors.firstName}
+        />
+        <FormField
+          id="lastName"
+          label="Last name"
+          required
+          placeholder="Doe"
+          value={data.lastName || ''}
+          onChange={(e) => updateData({ lastName: e.target.value })}
+          error={errors.lastName}
+        />
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-          <input
+          <FormField
+            id="email"
+            label="Email"
+            required
             type="email"
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-primary/20 focus:border-primary focus:ring-2"
             placeholder="jane.doe@example.com"
-            aria-label="Email"
             value={data.email || ''}
             onChange={(e) => updateData({ email: e.target.value })}
+            error={errors.email}
+            helpText="We will never share your email."
           />
         </div>
+      </div>
+      <div className="mt-6">
+        <Button variant="ghost" type="button">Need help?</Button>
       </div>
     </div>
   );
@@ -52,33 +57,30 @@ function App() {
       <p className="text-sm text-gray-600">Provide some additional details.</p>
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700">About you</label>
-          <textarea
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-primary/20 focus:border-primary focus:ring-2"
-            placeholder="Tell us a bit about yourself..."
+          <FormField
+            id="bio"
+            label="About you"
+            as="textarea"
             rows={4}
+            placeholder="Tell us a bit about yourself..."
             value={data.bio || ''}
             onChange={(e) => updateData({ bio: e.target.value })}
           />
         </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">City</label>
-          <input
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-primary/20 focus:border-primary focus:ring-2"
-            placeholder="San Francisco"
-            value={data.city || ''}
-            onChange={(e) => updateData({ city: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Country</label>
-          <input
-            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-primary/20 focus:border-primary focus:ring-2"
-            placeholder="United States"
-            value={data.country || ''}
-            onChange={(e) => updateData({ country: e.target.value })}
-          />
-        </div>
+        <FormField
+          id="city"
+          label="City"
+          placeholder="San Francisco"
+          value={data.city || ''}
+          onChange={(e) => updateData({ city: e.target.value })}
+        />
+        <FormField
+          id="country"
+          label="Country"
+          placeholder="United States"
+          value={data.country || ''}
+          onChange={(e) => updateData({ country: e.target.value })}
+        />
       </div>
     </div>
   );
