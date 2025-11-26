@@ -69,7 +69,18 @@ function App() {
         />
       ),
     },
-    { id: 4, title: 'Review', Component: ({ data, onEditSection }) => <ReviewStep values={data} onEditSection={onEditSection} /> },
+    {
+      id: 4,
+      title: 'Review',
+      Component: ({ data, updateData, onEditSection }) => (
+        <ReviewStep
+          values={data}
+          onEditSection={onEditSection}
+          consentChecked={Boolean(data.consent)}
+          onConsentChange={(checked) => updateData({ consent: checked })}
+        />
+      ),
+    },
   ];
 
   // Validators for each step using shared utilities
@@ -88,15 +99,16 @@ function App() {
     }),
     // Preferences step (optional fields, keep valid by default)
     () => ({ valid: true, errors: {} }),
-    // Review step
-    () => ({ valid: true, errors: {} }),
+    // Review step: require consent to submit
+    makeStepValidator({
+      consent: (value) => (value ? null : 'You must consent before submitting'),
+    }),
   ];
 
   const handleSubmit = (result) => {
     // eslint-disable-next-line no-console
     console.log('Submit result:', result);
-    // WizardContainer already shows success/error panels.
-    // Keep minimal alerts to avoid duplicate/confusing UX.
+    // WizardContainer shows an in-app success acknowledgement.
     if (!result.valid) {
       alert('Please fix the highlighted errors and try again.');
     }

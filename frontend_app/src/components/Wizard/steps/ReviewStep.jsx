@@ -9,8 +9,10 @@ import Button from "../../common/Button";
  * Props:
  * - values: object (all collected fields)
  * - onEditSection?: function(stepIndex: number)
+ * - consentChecked?: boolean - whether consent checkbox is checked
+ * - onConsentChange?: function(checked: boolean) - handler to update consent state
  */
-export default function ReviewStep({ values = {}, onEditSection }) {
+export default function ReviewStep({ values = {}, onEditSection, consentChecked = false, onConsentChange }) {
   // Helper: returns true if obj has a truthy, non-empty value
   const hasData = (obj) => {
     if (!obj || typeof obj !== "object") return false;
@@ -121,6 +123,38 @@ export default function ReviewStep({ values = {}, onEditSection }) {
             </p>
           </div>
         )}
+
+        {/* Consent section */}
+        <div
+          className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-3 ring-1 ring-black/5"
+          role="group"
+          aria-labelledby="consent-label"
+        >
+          <div className="flex items-start gap-3">
+            <input
+              id="consent"
+              name="consent"
+              type="checkbox"
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary/30"
+              checked={Boolean(consentChecked)}
+              onChange={(e) => onConsentChange?.(e.target.checked)}
+              aria-describedby="consent-desc"
+            />
+            <div>
+              <div id="consent-label" className="text-sm font-medium text-gray-800">
+                Consent and final acknowledgement
+              </div>
+              <p id="consent-desc" className="mt-1 text-sm text-gray-700">
+                I confirm that the information provided is accurate and I consent to processing it in accordance with the stated policy.
+              </p>
+              {!values.consent ? (
+                <p className="mt-2 text-xs text-error" role="note">
+                  You must check this box to enable final submission.
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

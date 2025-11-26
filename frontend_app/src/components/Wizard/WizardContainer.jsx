@@ -122,6 +122,7 @@ export default function WizardContainer({
         {submitSuccess ? (
           <div
             role="status"
+            aria-live="polite"
             className="mb-4 rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-amber-50 p-4 text-sm text-gray-800 shadow-soft ring-1 ring-black/5"
           >
             <div className="flex items-start gap-3">
@@ -237,7 +238,7 @@ export default function WizardContainer({
                   type="button"
                   variant="secondary"
                   onClick={handleSubmit}
-                  title="Submit"
+                  title={!submitEnabled ? "Complete all steps and consent to submit" : "Submit"}
                   disabled={isSubmitting || !submitEnabled}
                   aria-busy={isSubmitting || undefined}
                   aria-disabled={isSubmitting || !submitEnabled || undefined}

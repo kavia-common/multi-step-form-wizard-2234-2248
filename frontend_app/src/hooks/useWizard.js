@@ -145,104 +145,20 @@ export function useWizard({
 
   // PUBLIC_INTERFACE
   const submit = useCallback(async () => {
-    /** Validate final step and perform API or mock submission. */
+    /** Validate final step and show an in-app acknowledgement; no backend calls are made. */
     setSubmitError(null);
     setSubmitSuccess(null);
 
-    // Require all steps valid to submit
+    // Require all steps valid (includes consent validator from final step)
     if (!allStepsValid()) {
-      // Run validator for current step to surface errors to the user
       const { errors: latestErrors } = runValidator(currentStep);
       return { valid: false, data, errors: latestErrors };
     }
 
-    // Resolve API base URL from supported env vars
-    const rawApiBase =
-      process.env.REACT_APP_API_BASE ||
-      process.env.REACT_APP_BACKEND_URL ||
-      "";
-
-    // Helper to normalize base URL (trim trailing slashes)
-    const normalizeBase = (u) => {
-      if (!u || typeof u !== "string") return "";
-      return u.replace(/\/+$/, "");
-    };
-
-    // Build final endpoint. If no env var, prefer same-origin relative path.
-    const apiBase = normalizeBase(rawApiBase);
-    const submitPath = "/submit";
-    const url = apiBase ? `${apiBase}${submitPath}` : submitPath;
-
-    // If no API base configured, simulate async submit with success path (mock)
-    if (!apiBase) {
-      setIsSubmitting(true);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setSubmitSuccess("Your information has been submitted successfully.");
-        return { valid: true, data, errors: {} };
-      } finally {
-        setIsSubmitting(false);
-      }
-    }
-
-    // POST to the resolved URL. Add better diagnostics and CORS-friendly defaults.
     setIsSubmitting(true);
     try {
-      const resp = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // For most public APIs we should not include credentials by default.
-        // If your backend requires cookies, change to: credentials: "include"
-        credentials: "same-origin",
-        mode: "cors",
-        body: JSON.stringify(data || {}),
-      });
-
-      if (!resp.ok) {
-        // Try to parse error message if available
-        let message = `Submission failed with status ${resp.status}`;
-        try {
-          const ct = resp.headers.get("content-type") || "";
-          if (ct.includes("application/json")) {
-            const j = await resp.json();
-            if (j?.message) message = j.message;
-          } else {
-            const t = await resp.text();
-            if (t) message = `${message}: ${t}`;
-          }
-        } catch {
-          // ignore json/text parse errors
-        }
-        // eslint-disable-next-line no-console
-        console.error("[Submit] HTTP error", {
-          url,
-          status: resp.status,
-          statusText: resp.statusText,
-        });
-        setSubmitError(message);
-        return { valid: false, data, errors: { submit: message } };
-      }
-
-      // Success
-      setSubmitSuccess("Your information has been submitted successfully.");
-      return { valid: true, data, errors: {} };
-    } catch (e) {
-      // Network/CORS or fetch-level error.
-      const message = e?.message || "Network error during submission.";
-      // Provide actionable console diagnostics to help with CORS/HTTPS mismatch.
-      // eslint-disable-next-line no-console
-      console.error("[Submit] Network error", {
-        url,
-        error: message,
-        hints:
-          "Check REACT_APP_API_BASE/REACT_APP_BACKEND_URL, protocol (http vs https) mismatch, CORS headers on server, and that the endpoint is reachable.",
-      });
-
-      // Fallback: In a no-backend environment or CORS-blocked dev env, mock success so UX is not blocked.
-      // You can remove this fallback if a real backend is expected to always be available.
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // brief delay to provide UX feedback (spinner state)
+      await new Promise((resolve) => setTimeout(resolve, 400));
       setSubmitSuccess("Your information has been submitted successfully.");
       return { valid: true, data, errors: {} };
     } finally {
