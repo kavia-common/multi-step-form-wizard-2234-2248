@@ -62,10 +62,10 @@ function App() {
       Component: ({ data, updateData, errors }) => (
         <PreferencesStep
           values={{
-            bio: data.bio,
-            city: data.city,
-            country: data.country,
-            newsletter: data.newsletter,
+            topics: data.topics,
+            frequency: data.frequency,
+            format: data.format,
+            interests: data.interests,
           }}
           errors={errors}
           onChange={(patch) => updateData(patch)}
@@ -100,15 +100,16 @@ function App() {
       lastName: required('Last name is required'),
       email: compose(required('Email is required'), email('Valid email is required')),
     }),
-    // Preferences step: require at least one meaningful value
+    // Preferences step: require at least one topic and a frequency selection
     (data) => {
-      const hasBio = typeof data.bio === 'string' && data.bio.trim().length > 0;
-      const hasCity = typeof data.city === 'string' && data.city.trim().length > 0;
-      const hasCountry = typeof data.country === 'string' && data.country.trim().length > 0;
-      const wantsNewsletter = data.newsletter === true;
-
-      const valid = hasBio || hasCity || hasCountry || wantsNewsletter;
-      return { valid, errors: valid ? {} : { preferences: 'Please provide at least one preference (Bio, City, Country, or subscribe to Newsletter).' } };
+      const topics = Array.isArray(data.topics) ? data.topics.filter(Boolean) : [];
+      const hasTopic = topics.length > 0;
+      const hasFrequency = typeof data.frequency === 'string' && data.frequency.trim().length > 0;
+      const errors = {};
+      if (!hasTopic) errors.topics = 'Select at least one topic.';
+      if (!hasFrequency) errors.frequency = 'Choose a delivery frequency.';
+      const valid = hasTopic && hasFrequency;
+      return { valid, errors: valid ? {} : errors };
     },
     // Review step: require consent to submit
     makeStepValidator({

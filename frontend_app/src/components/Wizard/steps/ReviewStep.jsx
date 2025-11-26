@@ -43,15 +43,17 @@ export default function ReviewStep({ values = {}, onEditSection, consentChecked 
   const accountSection = { username: values.username };
   const profileNameSection = { firstName: values.firstName, lastName: values.lastName };
   const profileEmailSection = { email: values.email };
-  const locationSection = { city: values.city, country: values.country };
-  const aboutSection = { bio: values.bio };
-  const preferencesSection = { newsletter: values.newsletter };
+  // Newsletter preferences
+  const preferencesSection = {
+    topics: Array.isArray(values.topics) ? values.topics : [],
+    frequency: values.frequency,
+    format: values.format,
+    interests: values.interests,
+  };
 
   const showAccount = hasData(accountSection);
   const showName = hasData(profileNameSection);
   const showEmail = hasData(profileEmailSection);
-  const showLocation = hasData(locationSection);
-  const showAbout = hasData(aboutSection);
   const showPreferences = hasData(preferencesSection);
 
   return (
@@ -90,37 +92,51 @@ export default function ReviewStep({ values = {}, onEditSection, consentChecked 
           </div>
         )}
 
-        {showLocation && (
-          <div className="rounded-md border border-gray-200 bg-white p-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-800">Location</h3>
-              <EditBtn stepIndex={2} label="Preferences" />
-            </div>
-            <p className="text-sm text-gray-600">
-              {[values.city, values.country].filter(Boolean).join(", ")}
-            </p>
-          </div>
-        )}
-
-        {showAbout && (
-          <div className="rounded-md border border-gray-200 bg-white p-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-800">About</h3>
-              <EditBtn stepIndex={2} label="Preferences" />
-            </div>
-            <p className="whitespace-pre-wrap text-sm text-gray-600">{values.bio}</p>
-          </div>
-        )}
-
         {showPreferences && (
           <div className="rounded-md border border-gray-200 bg-white p-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-800">Preferences</h3>
+              <h3 className="text-sm font-medium text-gray-800">Newsletter Preferences</h3>
               <EditBtn stepIndex={2} label="Preferences" />
             </div>
-            <p className="text-sm text-gray-600">
-              Newsletter: {values.newsletter ? "Subscribed" : "Not subscribed"}
-            </p>
+            <div className="mt-1 text-sm text-gray-700 space-y-1">
+              {Array.isArray(values.topics) && values.topics.length > 0 ? (
+                <p>
+                  Topics:{" "}
+                  {values.topics
+                    .map((t) => {
+                      const map = {
+                        product: "Product Updates",
+                        promotions: "Promotions",
+                        news: "News & Articles",
+                        events: "Events",
+                      };
+                      return map[t] || t;
+                    })
+                    .join(", ")}
+                </p>
+              ) : null}
+              {values.frequency ? (
+                <p>
+                  Frequency:{" "}
+                  {values.frequency === "daily"
+                    ? "Daily"
+                    : values.frequency === "weekly"
+                    ? "Weekly"
+                    : values.frequency === "monthly"
+                    ? "Monthly"
+                    : values.frequency}
+                </p>
+              ) : null}
+              {values.format ? (
+                <p>Format: {values.format === "html" ? "HTML" : values.format === "text" ? "Plain Text" : values.format}</p>
+              ) : null}
+              {typeof values.interests === "string" && values.interests.trim() ? (
+                <p className="whitespace-pre-wrap">Interests: {values.interests}</p>
+              ) : null}
+              {!Array.isArray(values.topics) && !values.frequency && !values.format && !values.interests ? (
+                <p className="text-gray-500">No preferences provided.</p>
+              ) : null}
+            </div>
           </div>
         )}
 
