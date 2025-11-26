@@ -61,7 +61,7 @@ export default function ProgressBar({ current = 0, total = 1, labels = [], onSte
             {stepsArray.map((_, idx) => {
               const isComplete = idx < clampedCurrent;
               const isActive = idx === clampedCurrent;
-              const isUpcoming = idx > clampedCurrent;
+              // const isUpcoming = idx > clampedCurrent; // not used for class logic directly
 
               const StepTag = typeof onStepClick === "function" ? "button" : "div";
               const clickProps =
@@ -70,29 +70,30 @@ export default function ProgressBar({ current = 0, total = 1, labels = [], onSte
                   : {};
 
               // Colors and states
+              // Completed steps: subtle primary tint, do not override active
               const basePill =
                 "relative flex items-center gap-2 rounded-full px-3 py-2 shadow-sm transition";
               const statePill = isComplete
-                ? "bg-secondary text-white ring-1 ring-secondary/40 hover:shadow"
+                ? "bg-primary/10 text-primary ring-1 ring-primary/20 hover:bg-primary/15"
                 : isActive
-                ? "bg-white text-primary ring-1 ring-primary/30 hover:shadow"
-                : "bg-white/80 text-gray-600 ring-1 ring-gray-200 hover:bg-white";
+                ? "bg-primary text-white ring-1 ring-primary/40 hover:bg-primary focus:bg-primary"
+                : "bg-white/80 text-gray-700 ring-1 ring-gray-200 hover:bg-white";
 
               const numberBase =
                 "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition";
               const numberState = isComplete
-                ? "bg-secondary text-white ring-1 ring-white/20"
+                ? "bg-primary/20 text-primary ring-1 ring-primary/30"
                 : isActive
-                ? "bg-primary text-white ring-1 ring-primary/30"
+                ? "bg-white text-primary ring-1 ring-primary/30"
                 : "bg-white text-gray-700 ring-1 ring-gray-200";
 
               // Connector between steps (rounded pill-like)
               const Connector = () => (
                 <div
                   aria-hidden="true"
-                  className={`h-1.5 flex-1 rounded-full transition
-                    ${isComplete ? "bg-primary" : isActive ? "bg-primary/60" : "bg-gray-200"}
-                  `}
+                  className={`h-1.5 flex-1 rounded-full transition ${
+                    isComplete ? "bg-primary" : isActive ? "bg-primary/60" : "bg-gray-200"
+                  }`}
                 />
               );
 
@@ -101,7 +102,7 @@ export default function ProgressBar({ current = 0, total = 1, labels = [], onSte
                   {/* Step pill */}
                   <StepTag
                     {...clickProps}
-                    className={`${basePill} ${statePill} focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40`}
+                    className={`${basePill} ${statePill} focus:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                     aria-current={isActive ? "step" : undefined}
                     aria-label={labels[idx] ?? `Step ${idx + 1}`}
                     title={labels[idx] ?? `Step ${idx + 1}`}
