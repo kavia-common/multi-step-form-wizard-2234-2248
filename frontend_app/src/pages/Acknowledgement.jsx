@@ -5,7 +5,7 @@ import Button from "../components/common/Button";
 /**
  * PUBLIC_INTERFACE
  * Acknowledgement
- * Dedicated success page shown after a successful submit. Displays a minimal, safe summary and actions.
+ * Dedicated success page shown after a successful submit. Displays a minimal, safe acknowledgement and actions.
  *
  * Security: This component ensures sensitive fields are never displayed in clear text.
  * We sanitize input and then explicitly pick only allowed fields for display.
@@ -105,7 +105,7 @@ export default function Acknowledgement() {
     headingRef.current?.focus();
   }, []);
 
-  // Retrieve navigation state for a potential summary (if provided by navigation)
+  // Retrieve navigation state for a potential acknowledgement payload (if provided by navigation)
   let rawSummary = {};
   // Prefer react-router location.state
   const locState = location?.state;
@@ -182,7 +182,7 @@ export default function Acknowledgement() {
                   Submission Acknowledgement
                 </h1>
                 <p className="mt-1 text-sm sm:text-base text-gray-600 leading-relaxed tracking-wide">
-                  Thanks for completing the setup. Here’s a brief summary.
+                  Thanks for completing the setup. Here’s a brief acknowledgement.
                 </p>
               </div>
             </div>
@@ -215,10 +215,10 @@ export default function Acknowledgement() {
           </div>
         </div>
 
-        {/* Summary card: increased spacing, clearer h2/h3, subtle shadow and radius */}
+        {/* Acknowledgement card: increased spacing, clearer h2/h3, subtle shadow and radius */}
         <section className="rounded-2xl bg-surface p-7 shadow-soft ring-1 ring-black/[0.04]">
           <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 tracking-tight">
-            Summary
+            Acknowledgement
           </h2>
 
           {/* Increase vertical rhythm and readability */}
@@ -279,7 +279,7 @@ export default function Acknowledgement() {
               Return to start
             </Button>
             <Button variant="ghost" type="button" onClick={downloadCopy}>
-              Download summary
+              Download acknowledgement
             </Button>
           </div>
         </section>

@@ -124,7 +124,7 @@ function App() {
       alert('Please fix the highlighted errors and try again.');
       return;
     }
-    // Navigate to acknowledgement page with a summary. No backend calls.
+    // Navigate to acknowledgement page with an acknowledgement view. No backend calls.
     navigate('/acknowledgement', { state: { formData: result.data } });
   };
 
