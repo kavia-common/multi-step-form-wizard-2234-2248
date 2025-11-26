@@ -40,6 +40,10 @@ export function useWizard({
   const [currentStep, setCurrentStep] = useState(Math.min(Math.max(0, initialStep), Math.max(0, totalSteps - 1)));
   const [data, setData] = useState({ ...initialData });
   const [errors, setErrors] = useState({});
+  // Submission UI state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(null);
 
   const progress = useMemo(() => {
     if (!totalSteps) return 0;
@@ -97,11 +101,64 @@ export function useWizard({
     return { moved: true };
   }, [canGoBack]);
 
-  const submit = useCallback(() => {
-    // Validate final step if validator exists
+  // PUBLIC_INTERFACE
+  const submit = useCallback(async () => {
+    /** Validate final step and perform API or mock submission. */
+    setSubmitError(null);
+    setSubmitSuccess(null);
+
     const { isValid, errors: latestErrors } = runValidator(currentStep);
-    if (!isValid) return { valid: false, data, errors: latestErrors };
-    return { valid: true, data, errors: {} };
+    if (!isValid) {
+      return { valid: false, data, errors: latestErrors };
+    }
+
+    // If no API base configured, simulate async submit with success path
+    const apiBase = process.env.REACT_APP_API_BASE;
+    if (!apiBase) {
+      setIsSubmitting(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        setSubmitSuccess("Your information has been submitted successfully.");
+        return { valid: true, data, errors: {} };
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
+    // POST to `${REACT_APP_API_BASE}/submit`
+    setIsSubmitting(true);
+    try {
+      const resp = await fetch(`${apiBase}/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data || {}),
+      });
+
+      if (!resp.ok) {
+        // Try to parse error message if available
+        let message = `Submission failed with status ${resp.status}`;
+        try {
+          const j = await resp.json();
+          if (j?.message) message = j.message;
+        } catch {
+          // ignore json parse errors
+        }
+        setSubmitError(message);
+        return { valid: false, data, errors: { submit: message } };
+      }
+
+      // Success
+      setSubmitSuccess("Your information has been submitted successfully.");
+      return { valid: true, data, errors: {} };
+    } catch (e) {
+      const message = e?.message || "Network error during submission.";
+      setSubmitError(message);
+      return { valid: false, data, errors: { submit: message } };
+    } finally {
+      setIsSubmitting(false);
+    }
   }, [currentStep, runValidator, data]);
 
   return {
@@ -117,5 +174,9 @@ export function useWizard({
     submit,
     progress,
     errors,
+    // Submission UI state returned for consumers
+    isSubmitting,
+    submitError,
+    submitSuccess,
   };
 }

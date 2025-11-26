@@ -37,6 +37,9 @@ export default function WizardContainer({
     submit,
     progress,
     errors,
+    isSubmitting,
+    submitError,
+    submitSuccess,
   } = useWizard({
     initialStep: 0,
     totalSteps: steps.length || 1,
@@ -95,7 +98,29 @@ export default function WizardContainer({
         </div>
       </main>
 
-      <footer className="sticky bottom-0 mt-12 w-full border-t border-gray-200 bg-surface/80 backdrop-blur">
+      {/* Submission status messages */}
+      {(submitError || submitSuccess) ? (
+        <div className="mx-auto max-w-3xl px-4">
+          {submitError ? (
+            <div
+              role="alert"
+              className="mb-4 rounded-md border border-error/30 bg-red-50 px-3 py-2 text-sm text-error"
+            >
+              {submitError}
+            </div>
+          ) : null}
+          {submitSuccess ? (
+            <div
+              role="status"
+              className="mb-4 rounded-md border border-secondary/30 bg-amber-50 px-3 py-2 text-sm text-gray-800"
+            >
+              {submitSuccess}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      <footer className="sticky bottom-0 mt-6 w-full border-t border-gray-200 bg-surface/80 backdrop-blur">
         <div className="mx-auto max-w-3xl px-4 py-4">
           <div className="flex items-center justify-between">
             <Button
@@ -113,8 +138,15 @@ export default function WizardContainer({
                   Next
                 </Button>
               ) : (
-                <Button type="button" variant="secondary" onClick={handleSubmit} title="Submit">
-                  Submit
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleSubmit}
+                  title="Submit"
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting || undefined}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
               )}
             </div>
