@@ -163,20 +163,25 @@ export default function Acknowledgement() {
 
   return (
     <div className="min-h-screen bg-background text-text">
+      {/* Header: increase hierarchical clarity and spacing */}
       <header className="w-full border-b border-gray-200 bg-surface/80 backdrop-blur">
-        <div className="mx-auto max-w-4xl px-4 py-6">
+        <div className="mx-auto max-w-4xl px-4 py-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div aria-hidden="true" className="h-9 w-9 rounded-lg bg-primary/10 ring-1 ring-primary/20" />
+            <div className="flex items-center gap-4">
+              <div
+                aria-hidden="true"
+                className="h-10 w-10 rounded-lg bg-primary/10 ring-1 ring-primary/20"
+              />
               <div>
+                {/* h1 larger with improved tracking and line-height */}
                 <h1
                   ref={headingRef}
                   tabIndex={-1}
-                  className="text-xl font-semibold text-text tracking-tight focus:outline-none"
+                  className="text-2xl sm:text-3xl font-semibold leading-snug tracking-tight text-text focus:outline-none"
                 >
                   Submission Acknowledgement
                 </h1>
-                <p className="mt-0.5 text-sm text-gray-600">
+                <p className="mt-1 text-sm sm:text-base text-gray-600 leading-relaxed tracking-wide">
                   Thanks for completing the setup. Here’s a brief summary.
                 </p>
               </div>
@@ -188,50 +193,74 @@ export default function Acknowledgement() {
         </div>
       </header>
 
-      <main className="mx-auto my-8 max-w-3xl px-4">
+      <main className="mx-auto my-10 max-w-3xl px-4">
+        {/* Success announcement: slightly larger rhythm and subtle hierarchy */}
         <div
           role="status"
           aria-live="polite"
-          className="mb-5 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-blue-50 p-4 text-sm text-gray-800 shadow-soft ring-1 ring-black/5"
+          className="mb-6 rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 to-blue-50 p-5 text-sm sm:text-base text-gray-800 shadow-soft ring-1 ring-black/5"
         >
-          <div className="flex items-start gap-3">
-            <div className="mt-[2px] flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-700 ring-1 ring-emerald-500/25">
+          <div className="flex items-start gap-4">
+            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-700 ring-1 ring-emerald-500/25">
               ✓
             </div>
             <div>
-              <h2 className="text-base font-semibold text-emerald-700">Submission successful</h2>
-              <p className="mt-1 text-gray-700">
+              <h2 className="text-base sm:text-lg font-semibold text-emerald-700 leading-snug">
+                Submission successful
+              </h2>
+              <p className="mt-1.5 text-gray-700 leading-relaxed">
                 Your preferences were saved. Only key details are shown below for your records.
               </p>
             </div>
           </div>
         </div>
 
-        <section className="rounded-xl bg-surface p-6 shadow-soft ring-1 ring-black/[0.03]">
-          <h3 className="text-lg font-semibold text-gray-900">Summary</h3>
+        {/* Summary card: increased spacing, clearer h2/h3, subtle shadow and radius */}
+        <section className="rounded-2xl bg-surface p-7 shadow-soft ring-1 ring-black/[0.04]">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 tracking-tight">
+            Summary
+          </h2>
 
-          <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Username</dt>
-              <dd className="mt-1 text-sm text-gray-900 break-words">{allowed.username || "—"}</dd>
+          {/* Increase vertical rhythm and readability */}
+          <dl className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
+              <dt className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                Username
+              </dt>
+              <dd className="mt-1.5 break-words text-sm sm:text-base text-gray-900 leading-relaxed">
+                {allowed.username || "—"}
+              </dd>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Name</dt>
-              <dd className="mt-1 text-sm text-gray-900 break-words">{allowed.fullName || "—"}</dd>
+            <div className="rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
+              <dt className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                Name
+              </dt>
+              <dd className="mt-1.5 break-words text-sm sm:text-base text-gray-900 leading-relaxed">
+                {allowed.fullName || "—"}
+              </dd>
             </div>
 
-            <div className="sm:col-span-2 rounded-lg border border-gray-200 bg-white p-4">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <div className="sm:col-span-2 rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm">
+              <dt className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">
                 Selected Newsletter Topics
               </dt>
-              <dd className="mt-1 text-sm text-gray-900">
+              <dd className="mt-1.5 text-sm sm:text-base text-gray-900 leading-relaxed">
                 {noTopicsSelected ? (
                   <span className="text-gray-500">No topics selected</span>
                 ) : (
-                  <ul className="mt-1 list-inside list-disc space-y-1">
+                  <ul className="mt-1.5 space-y-2">
                     {humanTopics.map((t) => (
-                      <li key={t}>{t}</li>
+                      <li
+                        key={t}
+                        className="flex items-start gap-2 text-gray-900"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-primary"
+                        />
+                        <span className="leading-relaxed">{t}</span>
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -239,7 +268,7 @@ export default function Acknowledgement() {
             </div>
           </dl>
 
-          <div className="mt-6 flex flex-wrap items-center gap-2">
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <Button
               variant="primary"
               type="button"
