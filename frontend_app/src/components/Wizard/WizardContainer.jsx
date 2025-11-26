@@ -50,7 +50,7 @@ export default function WizardContainer({
     const res = next();
     if (!res.moved && res.reason === "invalid") {
       // eslint-disable-next-line no-console
-      console.warn("Validation failed", errors);
+      console.warn("Validation failed", res.errors || errors);
     }
   };
 

@@ -4,6 +4,7 @@ import AccountStep from './components/Wizard/steps/AccountStep';
 import ProfileStep from './components/Wizard/steps/ProfileStep';
 import PreferencesStep from './components/Wizard/steps/PreferencesStep';
 import ReviewStep from './components/Wizard/steps/ReviewStep';
+import { required, email, minLength, matchesField, compose, makeStepValidator } from './utils/validation';
 
 /**
  * PUBLIC_INTERFACE
@@ -71,29 +72,24 @@ function App() {
     { id: 4, title: 'Review', Component: ({ data }) => <ReviewStep values={data} /> },
   ];
 
-  // Validators for each step
+  // Validators for each step using shared utilities
   const validators = [
-    (d) => {
-      const errs = {};
-      if (!d.username || d.username.trim().length < 3)
-        errs.username = 'Username must be at least 3 characters';
-      if (!d.password || d.password.length < 8)
-        errs.password = 'Password must be at least 8 characters';
-      if (!d.confirmPassword) errs.confirmPassword = 'Please confirm your password';
-      if (d.password && d.confirmPassword && d.password !== d.confirmPassword) {
-        errs.confirmPassword = 'Passwords do not match';
-      }
-      return { valid: Object.keys(errs).length === 0, errors: errs };
-    },
-    (d) => {
-      const errs = {};
-      if (!d.firstName) errs.firstName = 'First name is required';
-      if (!d.lastName) errs.lastName = 'Last name is required';
-      if (!d.email || !/.+@.+\..+/.test(d.email)) errs.email = 'Valid email is required';
-      return { valid: Object.keys(errs).length === 0, errors: errs };
-    },
-    () => ({ valid: true }),
-    () => ({ valid: true }),
+    // Account step
+    makeStepValidator({
+      username: compose(required('Username is required'), minLength(3, 'Username must be at least 3 characters')),
+      password: compose(required('Password is required'), minLength(8, 'Password must be at least 8 characters')),
+      confirmPassword: compose(required('Please confirm your password'), matchesField('password', 'Passwords do not match')),
+    }),
+    // Profile step
+    makeStepValidator({
+      firstName: required('First name is required'),
+      lastName: required('Last name is required'),
+      email: compose(required('Email is required'), email('Valid email is required')),
+    }),
+    // Preferences step (optional fields, keep valid by default)
+    () => ({ valid: true, errors: {} }),
+    // Review step
+    () => ({ valid: true, errors: {} }),
   ];
 
   const handleSubmit = (result) => {

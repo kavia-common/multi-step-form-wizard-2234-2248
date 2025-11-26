@@ -56,14 +56,17 @@ export function useWizard({
       if (typeof validator === "function") {
         const result = validator(data);
         if (result && typeof result === "object") {
-          setErrors(result.errors || {});
-          return Boolean(result.valid);
+          const nextErrors = result.errors || {};
+          setErrors(nextErrors);
+          return { isValid: Boolean(result.valid), errors: nextErrors };
         }
-        return Boolean(result);
+        const isValid = Boolean(result);
+        if (isValid) setErrors({});
+        return { isValid, errors: isValid ? {} : {} };
       }
       // If no validator, consider valid
       setErrors({});
-      return true;
+      return { isValid: true, errors: {} };
     },
     [validators, data]
   );
@@ -82,11 +85,11 @@ export function useWizard({
 
   const next = useCallback(() => {
     if (!canGoNext) return { moved: false, reason: "end" };
-    const valid = runValidator(currentStep);
-    if (!valid) return { moved: false, reason: "invalid", errors };
+    const { isValid, errors: latestErrors } = runValidator(currentStep);
+    if (!isValid) return { moved: false, reason: "invalid", errors: latestErrors };
     setCurrentStep((s) => Math.min(s + 1, totalSteps - 1));
     return { moved: true };
-  }, [canGoNext, currentStep, runValidator, errors, totalSteps]);
+  }, [canGoNext, currentStep, runValidator, totalSteps]);
 
   const back = useCallback(() => {
     if (!canGoBack) return { moved: false, reason: "start" };
@@ -96,10 +99,10 @@ export function useWizard({
 
   const submit = useCallback(() => {
     // Validate final step if validator exists
-    const valid = runValidator(currentStep);
-    if (!valid) return { valid: false, data, errors };
+    const { isValid, errors: latestErrors } = runValidator(currentStep);
+    if (!isValid) return { valid: false, data, errors: latestErrors };
     return { valid: true, data, errors: {} };
-  }, [currentStep, runValidator, data, errors]);
+  }, [currentStep, runValidator, data]);
 
   return {
     currentStep,
