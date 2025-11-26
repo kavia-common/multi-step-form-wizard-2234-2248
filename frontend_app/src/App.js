@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import WizardContainer from './components/Wizard/WizardContainer';
 import AccountStep from './components/Wizard/steps/AccountStep';
 import ProfileStep from './components/Wizard/steps/ProfileStep';
@@ -12,6 +13,8 @@ import { required, email, minLength, matchesField, compose, makeStepValidator } 
  * Integrates the WizardContainer with the Ocean-themed steps and validators.
  */
 function App() {
+  const navigate = useNavigate();
+
   // PUBLIC_INTERFACE
   const steps = [
     {
@@ -116,10 +119,12 @@ function App() {
   const handleSubmit = (result) => {
     // eslint-disable-next-line no-console
     console.log('Submit result:', result);
-    // WizardContainer shows an in-app success acknowledgement.
     if (!result.valid) {
       alert('Please fix the highlighted errors and try again.');
+      return;
     }
+    // Navigate to acknowledgement page with a summary. No backend calls.
+    navigate('/acknowledgement', { state: { formData: result.data } });
   };
 
   return (

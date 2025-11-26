@@ -118,46 +118,7 @@ export default function WizardContainer({
       </header>
 
       <main className="mx-auto my-8 max-w-4xl px-4">
-        {/* Success acknowledgement panel */}
-        {submitSuccess ? (
-          <div
-            role="status"
-            aria-live="polite"
-            className="mb-4 rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-amber-50 p-4 text-sm text-gray-800 shadow-soft ring-1 ring-black/5"
-          >
-            <div className="flex items-start gap-3">
-              <div className="mt-[2px] h-6 w-6 rounded-full bg-emerald-500/20 text-emerald-700 ring-1 ring-emerald-500/30 flex items-center justify-center">
-                ✓
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-emerald-700">Submission successful</h3>
-                <p className="mt-1 text-gray-700">
-                  {typeof submitSuccess === "string"
-                    ? submitSuccess
-                    : "Your information has been submitted successfully."}
-                </p>
-                <div className="mt-2 text-xs text-gray-600">
-                  You can safely continue browsing or start a new submission.
-                </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <Button type="button" variant="primary" onClick={() => window.location.reload()}>
-                    Start over
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      // Keep the acknowledgement visible but allow continuing to review
-                      // no-op or custom close logic could be added here
-                    }}
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null}
+        {/* Success acknowledgement handled by navigation to /acknowledgement */}
 
         <div className="rounded-xl bg-surface p-6 shadow-soft ring-1 ring-black/[0.03]">
           <div className="flex items-center justify-between">

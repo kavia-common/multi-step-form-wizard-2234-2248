@@ -148,7 +148,7 @@ export function useWizard({
 
   // PUBLIC_INTERFACE
   const submit = useCallback(async () => {
-    /** Validate final step and show an in-app acknowledgement; no backend calls are made. */
+    /** Validate final step and return result; navigation will show acknowledgement page. */
     setSubmitError(null);
     setSubmitSuccess(null);
 
@@ -161,8 +161,7 @@ export function useWizard({
     setIsSubmitting(true);
     try {
       // brief delay to provide UX feedback (spinner state)
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      setSubmitSuccess("Your information has been submitted successfully.");
+      await new Promise((resolve) => setTimeout(resolve, 200));
       return { valid: true, data, errors: {} };
     } finally {
       setIsSubmitting(false);
