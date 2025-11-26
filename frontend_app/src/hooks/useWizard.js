@@ -23,6 +23,7 @@ import { useCallback, useMemo, useState } from "react";
  * - next (function) => validates current step (if validator) then advances
  * - back (function) => go to previous
  * - submit (function) => validates final step and returns { valid, data, errors }
+ * - submitEnabled (boolean) => true only when all steps validate successfully
  * - progress (number 0..100)
  * - isEditing (boolean)
  * - editingFromStep (number | null)
@@ -62,6 +63,10 @@ export function useWizard({
     setData((prev) => ({ ...prev, ...partial }));
   }, []);
 
+  /**
+   * Run validator for a specific step index using current data.
+   * Updates errors state with last run result for UX feedback.
+   */
   const runValidator = useCallback(
     (index) => {
       const validator = validators?.[index];
@@ -82,6 +87,23 @@ export function useWizard({
     },
     [validators, data]
   );
+
+  /**
+   * Check if all steps are valid. Non-function validators are treated as pass.
+   * This does NOT mutate local errors state (pure check).
+   */
+  const allStepsValid = useCallback(() => {
+    for (let i = 0; i < (validators?.length || totalSteps || 0); i++) {
+      const validator = validators?.[i];
+      if (typeof validator === "function") {
+        const result = validator(data);
+        if (!result || result.valid === false) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }, [validators, data, totalSteps]);
 
   const canGoBack = currentStep > 0;
   const canGoNext = totalSteps ? currentStep < totalSteps - 1 : false;
@@ -115,8 +137,10 @@ export function useWizard({
     setSubmitError(null);
     setSubmitSuccess(null);
 
-    const { isValid, errors: latestErrors } = runValidator(currentStep);
-    if (!isValid) {
+    // Require all steps valid to submit
+    if (!allStepsValid()) {
+      // Run validator for current step to surface errors to the user
+      const { errors: latestErrors } = runValidator(currentStep);
       return { valid: false, data, errors: latestErrors };
     }
 
@@ -167,7 +191,7 @@ export function useWizard({
     } finally {
       setIsSubmitting(false);
     }
-  }, [currentStep, runValidator, data]);
+  }, [allStepsValid, currentStep, runValidator, data]);
 
   // PUBLIC_INTERFACE
   const startEditing = useCallback(
@@ -206,6 +230,8 @@ export function useWizard({
     setCurrentStep(reviewIdx);
   }, [editingFromStep, totalSteps]);
 
+  const submitEnabled = allStepsValid();
+
   return {
     currentStep,
     setCurrentStep,
@@ -229,5 +255,7 @@ export function useWizard({
     startEditing,
     saveAndReturnToReview,
     cancelEditing,
+    // Global validation status
+    submitEnabled,
   };
 }

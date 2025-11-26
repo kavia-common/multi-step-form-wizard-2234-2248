@@ -45,6 +45,8 @@ export default function WizardContainer({
     startEditing,
     saveAndReturnToReview,
     cancelEditing,
+    // New: global validation status for enabling submit
+    submitEnabled,
   } = useWizard({
     initialStep: 0,
     totalSteps: steps.length || 1,
@@ -215,7 +217,11 @@ export default function WizardContainer({
                   </Button>
                 </>
               ) : canGoNext ? (
-                <Button type="button" variant="primary" onClick={handleNext}>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={handleNext}
+                >
                   Next
                 </Button>
               ) : (
@@ -224,8 +230,9 @@ export default function WizardContainer({
                   variant="secondary"
                   onClick={handleSubmit}
                   title="Submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !submitEnabled}
                   aria-busy={isSubmitting || undefined}
+                  aria-disabled={isSubmitting || !submitEnabled || undefined}
                 >
                   {isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
