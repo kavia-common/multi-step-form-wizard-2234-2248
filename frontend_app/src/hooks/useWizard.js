@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * PUBLIC_INTERFACE
@@ -46,6 +46,8 @@ export function useWizard({
   const [currentStep, setCurrentStep] = useState(Math.min(Math.max(0, initialStep), Math.max(0, totalSteps - 1)));
   const [data, setData] = useState({ ...initialData });
   const [errors, setErrors] = useState({});
+  // Track which steps have passed validation at least once (by index)
+  const [completedSteps, setCompletedSteps] = useState({});
   // Submission UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -89,21 +91,29 @@ export function useWizard({
   );
 
   /**
+   * Purely check validation for a given step index without mutating visible errors.
+   */
+  const checkStepValid = useCallback(
+    (index) => {
+      const validator = validators?.[index];
+      if (typeof validator !== "function") return true;
+      const result = validator(data);
+      return Boolean(result && result.valid !== false);
+    },
+    [validators, data]
+  );
+
+  /**
    * Check if all steps are valid. Non-function validators are treated as pass.
    * This does NOT mutate local errors state (pure check).
    */
   const allStepsValid = useCallback(() => {
-    for (let i = 0; i < (validators?.length || totalSteps || 0); i++) {
-      const validator = validators?.[i];
-      if (typeof validator === "function") {
-        const result = validator(data);
-        if (!result || result.valid === false) {
-          return false;
-        }
-      }
+    const count = validators?.length || totalSteps || 0;
+    for (let i = 0; i < count; i++) {
+      if (!checkStepValid(i)) return false;
     }
     return true;
-  }, [validators, data, totalSteps]);
+  }, [validators, data, totalSteps, checkStepValid]);
 
   const canGoBack = currentStep > 0;
   const canGoNext = totalSteps ? currentStep < totalSteps - 1 : false;
@@ -121,6 +131,8 @@ export function useWizard({
     if (!canGoNext) return { moved: false, reason: "end" };
     const { isValid, errors: latestErrors } = runValidator(currentStep);
     if (!isValid) return { moved: false, reason: "invalid", errors: latestErrors };
+    // Mark current step as completed
+    setCompletedSteps((prev) => ({ ...prev, [currentStep]: true }));
     setCurrentStep((s) => Math.min(s + 1, totalSteps - 1));
     return { moved: true };
   }, [canGoNext, currentStep, runValidator, totalSteps]);
@@ -259,6 +271,8 @@ export function useWizard({
     if (!isValid) {
       return { returned: false, reason: "invalid", errors: latestErrors };
     }
+    // Mark step as completed when saved successfully
+    setCompletedSteps((prev) => ({ ...prev, [currentStep]: true }));
     const reviewIdx = typeof editingFromStep === "number" ? editingFromStep : Math.max(0, (totalSteps || 1) - 1);
     setIsEditing(false);
     setEditingFromStep(null);
@@ -274,6 +288,25 @@ export function useWizard({
     setEditingFromStep(null);
     setCurrentStep(reviewIdx);
   }, [editingFromStep, totalSteps]);
+
+  // Keep completedSteps in sync with current data/validators
+  useEffect(() => {
+    const count = validators?.length || totalSteps || 0;
+    if (!count) return;
+    setCompletedSteps((prev) => {
+      const next = { ...prev };
+      for (let i = 0; i < count; i++) {
+        if (checkStepValid(i)) {
+          next[i] = true;
+        } else {
+          // Do not force false if previously completed? Requirement: show check only when validated.
+          // If data became invalid, hide the check.
+          next[i] = false;
+        }
+      }
+      return next;
+    });
+  }, [data, validators, totalSteps, checkStepValid]);
 
   const submitEnabled = allStepsValid();
 
@@ -302,5 +335,7 @@ export function useWizard({
     cancelEditing,
     // Global validation status
     submitEnabled,
+    // Completed steps map for UI (e.g., ProgressBar)
+    completedSteps,
   };
 }

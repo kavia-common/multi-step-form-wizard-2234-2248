@@ -47,6 +47,8 @@ export default function WizardContainer({
     cancelEditing,
     // New: global validation status for enabling submit
     submitEnabled,
+    // Completed steps map for progress UI
+    completedSteps,
   } = useWizard({
     initialStep: 0,
     totalSteps: steps.length || 1,
@@ -110,6 +112,7 @@ export default function WizardContainer({
             total={steps.length || 1}
             labels={steps.map((s) => s.title)}
             onStepClick={goTo}
+            completedSteps={completedSteps}
           />
         </div>
       </header>
