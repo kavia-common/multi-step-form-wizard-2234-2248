@@ -98,7 +98,10 @@ export function useWizard({
       const validator = validators?.[index];
       if (typeof validator !== "function") return true;
       const result = validator(data);
-      return Boolean(result && result.valid !== false);
+      if (result && typeof result === "object" && "valid" in result) {
+        return Boolean(result.valid);
+      }
+      return Boolean(result);
     },
     [validators, data]
   );

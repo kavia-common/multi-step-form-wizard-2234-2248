@@ -97,8 +97,16 @@ function App() {
       lastName: required('Last name is required'),
       email: compose(required('Email is required'), email('Valid email is required')),
     }),
-    // Preferences step (optional fields, keep valid by default)
-    () => ({ valid: true, errors: {} }),
+    // Preferences step: require at least one meaningful value
+    (data) => {
+      const hasBio = typeof data.bio === 'string' && data.bio.trim().length > 0;
+      const hasCity = typeof data.city === 'string' && data.city.trim().length > 0;
+      const hasCountry = typeof data.country === 'string' && data.country.trim().length > 0;
+      const wantsNewsletter = data.newsletter === true;
+
+      const valid = hasBio || hasCity || hasCountry || wantsNewsletter;
+      return { valid, errors: valid ? {} : { preferences: 'Please provide at least one preference (Bio, City, Country, or subscribe to Newsletter).' } };
+    },
     // Review step: require consent to submit
     makeStepValidator({
       consent: (value) => (value ? null : 'You must consent before submitting'),
