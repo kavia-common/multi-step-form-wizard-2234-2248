@@ -132,6 +132,9 @@ export default function WizardContainer({
                     ? submitSuccess
                     : "Your information has been submitted successfully."}
                 </p>
+                <div className="mt-2 text-xs text-gray-600">
+                  You can safely continue browsing or start a new submission.
+                </div>
                 <div className="mt-3 flex items-center gap-2">
                   <Button type="button" variant="primary" onClick={() => window.location.reload()}>
                     Start over
@@ -172,7 +175,9 @@ export default function WizardContainer({
             role="alert"
             className="mb-4 rounded-md border border-error/30 bg-red-50 px-3 py-2 text-sm text-error"
           >
-            {submitError}
+            {typeof submitError === "string"
+              ? submitError
+              : "We couldn't reach the server to save your submission. Please try again later."}
           </div>
         </div>
       ) : null}
