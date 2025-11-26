@@ -40,6 +40,11 @@ export default function WizardContainer({
     isSubmitting,
     submitError,
     submitSuccess,
+    // Edit mode
+    isEditing,
+    startEditing,
+    saveAndReturnToReview,
+    cancelEditing,
   } = useWizard({
     initialStep: 0,
     totalSteps: steps.length || 1,
@@ -57,9 +62,41 @@ export default function WizardContainer({
     }
   };
 
-  const handleSubmit = () => {
-    const result = submit();
+  const handleSubmit = async () => {
+    const result = await submit();
     onSubmit(result);
+  };
+
+  const isReviewStep = currentStep === Math.max(0, (steps.length || 1) - 1);
+
+  // When ReviewStep renders, provide edit handler to jump into edit mode
+  const renderActiveComponent = () => {
+    if (active?.Component) {
+      const extraProps =
+        isReviewStep
+          ? {
+              onEditSection: (stepIndex) => startEditing(stepIndex, currentStep),
+            }
+          : {};
+      return (
+        <active.Component
+          data={data}
+          updateData={updateData}
+          stepIndex={currentStep}
+          progress={progress}
+          errors={errors}
+          {...extraProps}
+        />
+      );
+    }
+    if (typeof active?.render === "function") {
+      return active.render({ data, updateData, stepIndex: currentStep, progress, errors });
+    }
+    return (
+      <p className="text-sm text-gray-600">
+        This is a placeholder for the step content. Provide a Component or render function for each step.
+      </p>
+    );
   };
 
   return (
@@ -76,47 +113,65 @@ export default function WizardContainer({
       </header>
 
       <main className="mx-auto my-8 max-w-3xl px-4">
-        <div className="rounded-xl bg-surface p-6 shadow-soft ring-1 ring-black/[0.03]">
-          <h2 className="text-xl font-semibold text-gray-900">{active?.title || "Step"}</h2>
-          <div className="mt-4">
-            {active?.Component ? (
-              <active.Component
-                data={data}
-                updateData={updateData}
-                stepIndex={currentStep}
-                progress={progress}
-                errors={errors}
-              />
-            ) : typeof active?.render === "function" ? (
-              active.render({ data, updateData, stepIndex: currentStep, progress, errors })
-            ) : (
-              <p className="text-sm text-gray-600">
-                This is a placeholder for the step content. Provide a Component or render function for each step.
-              </p>
-            )}
+        {/* Success acknowledgement panel */}
+        {submitSuccess ? (
+          <div
+            role="status"
+            className="mb-4 rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-amber-50 p-4 text-sm text-gray-800 shadow-soft ring-1 ring-black/5"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-[2px] h-6 w-6 rounded-full bg-emerald-500/20 text-emerald-700 ring-1 ring-emerald-500/30 flex items-center justify-center">
+                ✓
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-emerald-700">Submission successful</h3>
+                <p className="mt-1 text-gray-700">
+                  {typeof submitSuccess === "string"
+                    ? submitSuccess
+                    : "Your information has been submitted successfully."}
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <Button type="button" variant="primary" onClick={() => window.location.reload()}>
+                    Start over
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      // Keep the acknowledgement visible but allow continuing to review
+                      // no-op or custom close logic could be added here
+                    }}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
+        ) : null}
+
+        <div className="rounded-xl bg-surface p-6 shadow-soft ring-1 ring-black/[0.03]">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">{active?.title || "Step"}</h2>
+            {isEditing && !isReviewStep ? (
+              <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary-700 ring-1 ring-primary/20">
+                Editing
+              </span>
+            ) : null}
+          </div>
+          <div className="mt-4">{renderActiveComponent()}</div>
         </div>
       </main>
 
-      {/* Submission status messages */}
-      {(submitError || submitSuccess) ? (
+      {/* Error toast/panel if needed */}
+      {submitError ? (
         <div className="mx-auto max-w-3xl px-4">
-          {submitError ? (
-            <div
-              role="alert"
-              className="mb-4 rounded-md border border-error/30 bg-red-50 px-3 py-2 text-sm text-error"
-            >
-              {submitError}
-            </div>
-          ) : null}
-          {submitSuccess ? (
-            <div
-              role="status"
-              className="mb-4 rounded-md border border-secondary/30 bg-amber-50 px-3 py-2 text-sm text-gray-800"
-            >
-              {submitSuccess}
-            </div>
-          ) : null}
+          <div
+            role="alert"
+            className="mb-4 rounded-md border border-error/30 bg-red-50 px-3 py-2 text-sm text-error"
+          >
+            {submitError}
+          </div>
         </div>
       ) : null}
 
@@ -133,7 +188,33 @@ export default function WizardContainer({
               Back
             </Button>
             <div className="flex items-center gap-2">
-              {canGoNext ? (
+              {/* Edit mode save button when not on review */}
+              {isEditing && !isReviewStep ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={cancelEditing}
+                    title="Cancel editing and return to Review"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={() => {
+                      const res = saveAndReturnToReview();
+                      if (res.returned === false && res.reason === "invalid") {
+                        // eslint-disable-next-line no-console
+                        console.warn("Validation failed during save", res.errors || {});
+                      }
+                    }}
+                    title="Save changes and return to Review"
+                  >
+                    Save changes
+                  </Button>
+                </>
+              ) : canGoNext ? (
                 <Button type="button" variant="primary" onClick={handleNext}>
                   Next
                 </Button>

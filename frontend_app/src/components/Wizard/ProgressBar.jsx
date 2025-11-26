@@ -15,64 +15,93 @@ export default function ProgressBar({ current = 0, total = 1, labels = [], onSte
 
   return (
     <div aria-label="Wizard progress" className="w-full">
-      {/* Numeric status */}
+      {/* Ocean-themed header with gradient chip */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-primary-700">Setup Wizard</h1>
-          <p className="text-sm text-gray-600">Follow the steps to complete your setup.</p>
+        <div className="flex items-center gap-3">
+          <div
+            aria-hidden="true"
+            className="h-8 w-8 shrink-0 rounded-md bg-gradient-to-br from-primary/20 to-secondary/20 ring-1 ring-black/5"
+          />
+          <div>
+            <h1 className="text-lg font-semibold text-primary-800">Setup Wizard</h1>
+            <p className="text-sm text-gray-600">Follow the steps to complete your setup.</p>
+          </div>
         </div>
-        <span className="rounded-md bg-primary-50 px-2 py-1 text-xs font-medium text-primary-700">
+        <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary-700 ring-1 ring-primary/20">
           Step {current + 1} of {total}
         </span>
       </div>
 
-      {/* Progress bar */}
-      <div className="mt-4 h-2 w-full rounded-full bg-gray-200" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percentage)}>
+      {/* Animated progress track */}
+      <div
+        className="relative mt-4 h-2 w-full overflow-hidden rounded-full bg-gradient-to-r from-gray-100 to-gray-200"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(percentage)}
+        aria-label="Progress through steps"
+      >
         <div
-          className="h-2 rounded-full bg-primary transition-all duration-300"
+          className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-primary via-primary-500 to-primary-700 transition-all duration-500 ease-out"
           style={{ width: `${percentage}%` }}
+        />
+        {/* subtle shimmer on active area */}
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0 h-full w-[120px] -translate-x-full animate-[move_2.2s_linear_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"
+          style={{ transform: `translateX(${percentage}%)` }}
+          aria-hidden="true"
         />
       </div>
 
-      {/* Step indicators */}
-      <ol className="mt-3 flex items-center justify-between text-xs text-gray-500">
+      {/* Step badges with labels */}
+      <ol className="mt-4 grid grid-cols-12 items-start gap-2">
         {Array.from({ length: total }).map((_, idx) => {
           const isActive = idx === current;
           const isComplete = idx < current;
           const label = labels[idx] ?? `Step ${idx + 1}`;
-          const baseClasses = "flex h-6 w-6 items-center justify-center rounded-full border text-[11px]";
-          const stateClasses = isComplete
+
+          const badgeBase =
+            "flex h-7 w-7 items-center justify-center rounded-full border text-[11px] transition shadow-sm";
+          const badgeState = isComplete
             ? "border-primary bg-primary text-white"
             : isActive
-            ? "border-primary text-primary"
-            : "border-gray-300 text-gray-500";
+            ? "border-primary bg-white text-primary ring-2 ring-primary/20"
+            : "border-gray-300 bg-white text-gray-500";
+          const content = isComplete ? (
+            <span aria-hidden="true">✓</span>
+          ) : (
+            <span aria-hidden="true">{idx + 1}</span>
+          );
+
+          const ItemTag = typeof onStepClick === "function" ? "button" : "div";
+          const clickProps =
+            typeof onStepClick === "function"
+              ? {
+                  type: "button",
+                  onClick: () => onStepClick(idx),
+                }
+              : {};
 
           return (
-            <li key={idx} className="flex items-center gap-2">
-              {typeof onStepClick === "function" ? (
-                <button
-                  type="button"
-                  className={`${baseClasses} ${stateClasses}`}
-                  aria-current={isActive ? "step" : undefined}
-                  title={label}
-                  onClick={() => onStepClick(idx)}
-                >
-                  {idx + 1}
-                </button>
-              ) : (
-                <span
-                  className={`${baseClasses} ${stateClasses}`}
-                  aria-current={isActive ? "step" : undefined}
-                  title={label}
-                >
-                  {idx + 1}
-                </span>
-              )}
-              <span className={isActive ? "text-primary-700 font-medium" : ""}>{label}</span>
+            <li key={idx} className="col-span-12 sm:col-span-3">
+              <ItemTag
+                {...clickProps}
+                className={`${badgeBase} ${badgeState} hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40`}
+                aria-current={isActive ? "step" : undefined}
+                aria-label={label}
+                title={label}
+              >
+                {content}
+              </ItemTag>
+              <div className={`mt-1 text-xs ${isActive ? "text-primary-800 font-medium" : "text-gray-600"}`}>
+                {label}
+              </div>
             </li>
           );
         })}
       </ol>
+      {/* Keyframes for shimmer */}
+      <style>{`@keyframes move { 0% { transform: translateX(-120px); } 100% { transform: translateX(100%); } }`}</style>
     </div>
   );
 }

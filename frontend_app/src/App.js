@@ -69,7 +69,7 @@ function App() {
         />
       ),
     },
-    { id: 4, title: 'Review', Component: ({ data }) => <ReviewStep values={data} /> },
+    { id: 4, title: 'Review', Component: ({ data, onEditSection }) => <ReviewStep values={data} onEditSection={onEditSection} /> },
   ];
 
   // Validators for each step using shared utilities

@@ -24,6 +24,11 @@ import { useCallback, useMemo, useState } from "react";
  * - back (function) => go to previous
  * - submit (function) => validates final step and returns { valid, data, errors }
  * - progress (number 0..100)
+ * - isEditing (boolean)
+ * - editingFromStep (number | null)
+ * - startEditing(stepIndex: number)
+ * - saveAndReturnToReview(): { returned: boolean }
+ * - cancelEditing(): void
  */
 export function useWizard({
   initialStep = 0,
@@ -44,6 +49,9 @@ export function useWizard({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(null);
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingFromStep, setEditingFromStep] = useState(null); // the review step index to return to (usually last step)
 
   const progress = useMemo(() => {
     if (!totalSteps) return 0;
@@ -161,6 +169,43 @@ export function useWizard({
     }
   }, [currentStep, runValidator, data]);
 
+  // PUBLIC_INTERFACE
+  const startEditing = useCallback(
+    (targetStepIndex, reviewStepIndex) => {
+      /** Enable edit mode, remember the review step to return to, and jump to the target step. */
+      if (typeof targetStepIndex !== "number") return;
+      setIsEditing(true);
+      setEditingFromStep(
+        typeof reviewStepIndex === "number" ? reviewStepIndex : Math.max(0, (totalSteps || 1) - 1)
+      );
+      goTo(targetStepIndex);
+    },
+    [goTo, totalSteps]
+  );
+
+  // PUBLIC_INTERFACE
+  const saveAndReturnToReview = useCallback(() => {
+    /** Validate current step; if valid, return to the stored review step and exit edit mode. */
+    const { isValid, errors: latestErrors } = runValidator(currentStep);
+    if (!isValid) {
+      return { returned: false, reason: "invalid", errors: latestErrors };
+    }
+    const reviewIdx = typeof editingFromStep === "number" ? editingFromStep : Math.max(0, (totalSteps || 1) - 1);
+    setIsEditing(false);
+    setEditingFromStep(null);
+    setCurrentStep(reviewIdx);
+    return { returned: true };
+  }, [currentStep, runValidator, editingFromStep, totalSteps]);
+
+  // PUBLIC_INTERFACE
+  const cancelEditing = useCallback(() => {
+    /** Discard edit mode and return to review step without validation. */
+    const reviewIdx = typeof editingFromStep === "number" ? editingFromStep : Math.max(0, (totalSteps || 1) - 1);
+    setIsEditing(false);
+    setEditingFromStep(null);
+    setCurrentStep(reviewIdx);
+  }, [editingFromStep, totalSteps]);
+
   return {
     currentStep,
     setCurrentStep,
@@ -174,9 +219,15 @@ export function useWizard({
     submit,
     progress,
     errors,
-    // Submission UI state returned for consumers
+    // Submission UI state
     isSubmitting,
     submitError,
     submitSuccess,
+    // Edit mode API
+    isEditing,
+    editingFromStep,
+    startEditing,
+    saveAndReturnToReview,
+    cancelEditing,
   };
 }
